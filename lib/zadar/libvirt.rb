@@ -1,5 +1,3 @@
-require 'zadar/libvirt/storage_pool'
-
 module Zadar
   module Libvirt
     URI = 'qemu:///system'
@@ -9,3 +7,6 @@ module Zadar
     end
   end
 end
+
+require 'zadar/libvirt/template'
+require 'zadar/libvirt/storage_pool'

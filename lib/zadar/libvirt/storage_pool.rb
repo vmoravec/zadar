@@ -7,6 +7,14 @@ module Zadar
         end
       end
 
+      #name: 'default', type: 'dir', dirname: 'images', path: nil
+      def self.define options={}
+        raise "Path for storage pool missing" unless options[:path]
+
+        template = Template.new(:pool, options)
+      # Connection.define_storage_pool_xml(template.to_xml)
+      end
+
       def initialize libvirt_pool
       end
     end
