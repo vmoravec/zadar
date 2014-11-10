@@ -1,3 +1,5 @@
+require 'nokogiri'
+
 module Zadar
   module Libvirt
     URI = 'qemu:///system'

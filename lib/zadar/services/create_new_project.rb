@@ -19,7 +19,6 @@ module Zadar
           create_project_dir
           pool = define_pool
           pool.build
-          pool.create
 
           report "New project in with path #{path.join(name)} has been created"
         end
