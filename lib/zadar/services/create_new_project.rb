@@ -1,17 +1,13 @@
 module Zadar
   module Services
     class CreateNewProject < Service
-      DEFAULT_NAME = "default"
-      DEFAULT_DIR  = ".zadar/projects"
-      DEFAULT_PATH = Pathname.new(Dir.home).join(DEFAULT_DIR)
-
       attr_reader :name
 
       attr_reader :path
 
       def initialize options
-        @name = options[:name] || DEFAULT_NAME
-        @path = options[:path] || DEFAULT_PATH
+        @name = options[:name] || Zadar::DEFAULT_NAME
+        @path = options[:path] || Zadar::DEFAULT_PATH
       end
 
       def call
@@ -21,7 +17,9 @@ module Zadar
           end
 
           create_project_dir
-          create_pool
+          pool = define_pool
+          pool.build
+          pool.create
 
           report "New project in with path #{path.join(name)} has been created"
         end
@@ -33,8 +31,8 @@ module Zadar
         FileUtils.mkdir_p(path.join(name).to_path)
       end
 
-      def create_pool
-        Libvirt::StoragePool.define(dirname: 'images', path: path)
+      def define_pool
+        Libvirt::StoragePool.define(name: name, path: path.join(name).join('images'), type: 'dir')
       end
     end
   end
