@@ -32,15 +32,16 @@ module Zadar
       end
 
       def_delegators :@libvirt_pool, :create, :destroy, :delete, :free, :active?,
-                                     :undefine, :xml_desc
+                     :undefine, :xml_desc
 
-      attr_reader :xml, :path, :name
+      attr_reader :xml, :path, :name, :uuid
 
       def initialize libvirt_pool
         @libvirt_pool = libvirt_pool
         xml_doc = Nokogiri::XML(xml_desc)
         @path = xml_doc.xpath("//target/path").text
         @name = xml_doc.xpath("//name").text
+        @uuid = xml_doc.xpath("//uuid").text
       end
 
       def purge!

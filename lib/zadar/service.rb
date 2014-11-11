@@ -1,12 +1,22 @@
 module Zadar
   class Service
-    def failure! message
-      messages << message
-      throw(:failure, {type: :failure, messages: messages})
+    attr_accessor :failed
+
+    def failed?
+      failed.nil? ? false : failed
+    end
+
+    def succeeded?
+      !failed?
     end
 
     def report message
       messages << message
+    end
+
+    def report_error message
+      messages << message
+      self.failed = true
     end
 
     def messages
@@ -15,14 +25,15 @@ module Zadar
       @messages = []
     end
 
-    def success! message=nil
-      messages << message
-      throw(:success, {type: :success, messages: messages})
-    end
-
     def call
       yield
-      success!
+    rescue => e
+      report_error(e.message)
+
+      #TODO
+      #Implement zadar logger and use it here
+    ensure
+      return self
     end
   end
 end

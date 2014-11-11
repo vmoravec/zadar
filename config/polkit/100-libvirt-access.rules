@@ -1,0 +1,8 @@
+// Replace the $USER with the current user you want to allow to connect to libvirtd
+// Place this file into /etc/polkit-1/rules.d or /usr/share/polkit-1/rules.d
+
+polkit.addRule(function(action, subject) {
+  if (action.id == "org.libvirt.unix.manage" && subject.user == $USER) {
+    return polkit.Result.YES;
+  }
+});

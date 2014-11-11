@@ -11,8 +11,12 @@ module Zadar
       attr_reader :argv
       attr_accessor :name
       attr_accessor :exit_code
+      attr_reader :results
+      attr_reader :errors
 
       def initialize argv
+        @results = []
+        @errors  = []
         @exit_code = 0
         @argv = argv
         @load_path = Pathname.new(__dir__).join(COMMANDS_DIR)
@@ -37,19 +41,20 @@ module Zadar
       end
 
       def run
-        result = catch(:failure) do
-          catch(:success) do
-            super(argv)
-          end
+        catch(:failure) do
+          super(argv)
         end
 
-        case result
-        when Integer
-          self.exit_code = result
-        when Hash
-          self.exit_code = 1 if result[:type] && result[:type] == :failure
-          puts result[:messages].join("\n")
-        end
+        failed = results.find(&:failed?)
+        self.exit_code = 1 if failed || !errors.empty?
+
+        error_messages = results.select(&:failed?).map(&:messages).flatten
+        errors.concat(error_messages)
+
+        messages = results.select(&:succeeded?).map(&:messages).flatten
+
+        STDOUT.puts(messages.join("\n")) unless messages.empty?
+        STDERR.puts(errors.join("\n")) unless errors.empty?
 
       rescue => e
         display_error(e)
@@ -86,7 +91,6 @@ module Zadar
       def manage_errors
         on_error do |error|
           display_error(error)
-          throw :failure
         end
       end
 
@@ -97,7 +101,8 @@ module Zadar
 
       def failure message
         self.exit_code = 1
-        throw :failure, message
+        errors << message
+        throw :failure
       end
 
       def display_error error
