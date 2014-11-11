@@ -5,7 +5,7 @@ zadar do
   command :implode do |implode|
     implode.flag [:n, :name]
     implode.action do |_, options, _|
-      Zadar::Services::ImplodeProject.new(options).call
+      results << Zadar::Services::ImplodeProject.new(options).call
     end
   end
 end

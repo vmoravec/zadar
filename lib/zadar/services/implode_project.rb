@@ -10,10 +10,12 @@ module Zadar
 
       def call
         super do
-          failure!("Project '#{project_name}' not found") unless File.exists?(project_path)
+          report_error("Project '#{project_name}' not found") and return unless File.exists?(project_path)
 
           Libvirt::StoragePool.wipeout(project_name)
           FileUtils.rm_rf(project_path)
+
+          report "Project #{project_name} has been successfuly purged from its location at #{project_path}"
         end
       end
     end

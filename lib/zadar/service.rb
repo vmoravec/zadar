@@ -25,6 +25,12 @@ module Zadar
       @messages = []
     end
 
+    def tasks
+      return @tasks if @tasks
+
+      @tasks = []
+    end
+
     def call
       yield
     rescue => e

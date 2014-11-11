@@ -5,7 +5,7 @@ zadar do
   command :create do |create|
     create.flag [:n, :name]
     create.action do |_, options, _|
-      Zadar::Services::CreateNewProject.new(options).call
+      results << Zadar::Services::CreateNewProject.new(options).call
     end
   end
 end
