@@ -2,5 +2,10 @@
   <name><%= options.name %></name>
   <target>
     <path><%= options.path %></path>
+    <permissions>
+      <mode>0711</mode>
+      <owner><%= options.user.id %></owner>
+      <group><%= options.user.gid %></group>
+    </permissions>
   </target>
 </pool>
