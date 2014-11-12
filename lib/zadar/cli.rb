@@ -22,4 +22,4 @@ end
 
 self.extend(Zadar::Cli::Dsl)
 
-Zadar::Libvirt.connect
+Zadar.initialize

@@ -10,7 +10,3 @@ development:
 test: &test
   <<: *default
   database: test.sqlite3
-
-production:
-  <<: *default
-  database: production.sqlite3

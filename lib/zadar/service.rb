@@ -31,6 +31,8 @@ module Zadar
       @tasks = []
     end
 
+    alias_method :services, :tasks
+
     def call
       yield
     rescue => e

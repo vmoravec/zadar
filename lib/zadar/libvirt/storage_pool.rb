@@ -27,7 +27,9 @@ module Zadar
       end
 
       def self.wipeout name
-        pool = find!(name)
+        pool = find(name)
+        return unless pool
+
         pool.purge!
       end
 

@@ -12,6 +12,9 @@ module Zadar
         super do
           report_error("Project '#{project_name}' not found") and return unless File.exists?(project_path)
 
+          #FIXME
+          #Delete all volumes before removing the pool
+          #Do not store any other files beside the libvirt volumes in that directory
           Libvirt::StoragePool.wipeout(project_name)
           FileUtils.rm_rf(project_path)
 
