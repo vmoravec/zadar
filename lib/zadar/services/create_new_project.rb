@@ -47,7 +47,7 @@ module Zadar
       end
 
       def define_pool
-        Libvirt::StoragePool.define(name: name, path: path.join('images'), type: 'dir', user: user)
+        Libvirt::StoragePool.define(name: name, path: path.join('storage'), type: 'dir', user: user)
       end
 
       def detect_user
