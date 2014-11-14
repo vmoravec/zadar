@@ -1,7 +1,5 @@
 require 'gli'
 
-require 'zadar/services/detect_project_path'
-
 module Zadar
   module Cli
     class Command
@@ -12,13 +10,11 @@ module Zadar
       attr_reader :load_path
       attr_reader :argv
       attr_accessor :name
-      attr_accessor :project_path
       attr_accessor :exit_code
       attr_reader :results
       attr_reader :errors
 
       def initialize argv
-        ENV["ZADAR_ENV"] = 'development'
         @results = []
         @errors  = []
         @exit_code = 0
@@ -52,10 +48,10 @@ module Zadar
         failed = results.find(&:failed?)
         self.exit_code = 1 if failed || !errors.empty?
 
-        error_messages = results.select(&:failed?).map(&:messages).flatten
+        error_messages = results.select(&:failed?).map(&:errors)
         errors.concat(error_messages)
 
-        messages = results.select(&:succeeded?).map(&:messages).flatten
+        messages = results.map(&:messages).flatten
 
         STDOUT.puts(messages.join("\n")) unless messages.empty?
         STDERR.puts(errors.join("\n")) unless errors.empty?
@@ -91,12 +87,6 @@ module Zadar
         program_desc "Virtualization management and sharing system"
         version      ::Zadar::VERSION
         flag [:p, :project]
-
-        pre do |global, command, opts, args|
-          detect_task = Services::DetectProjectPath.new(global[:project]).call
-          self.project_path = detect_task.project_path
-          true
-        end
       end
 
       def manage_errors

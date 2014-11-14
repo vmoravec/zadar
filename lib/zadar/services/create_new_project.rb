@@ -1,5 +1,5 @@
 require 'etc'
-require 'zadar/services/create_new_app_structure'
+require 'zadar/services/create_project_internals'
 
 module Zadar
   module Services
@@ -18,16 +18,17 @@ module Zadar
       def call
         super do
           if File.exist?(path.to_path)
-            report_error "Project with name '#{name}' already exists"
-            return
+            failure! "Directory with name '#{name}' already exists in path #{path}"
           end
 
           create_project_dir
           pool = define_pool
           pool.build
 
-          app_structure_task = CreateNewAppStructure.new(path)
-          tasks << app_structure_task.call
+          create_log_dir
+
+          create_project_internals_task = CreateProjectInternals.new(path)
+          tasks.push(create_project_internals_task.call)
 
           rcfile.save
 
@@ -38,14 +39,14 @@ module Zadar
       private
 
       def create_project_dir
+        # FIXME implement some rollback scenario for every service
+        # Sometimes it's a good feature to have and sometimes the implementation will be unused
+        # rollback.run if failed
+        # rollback.add { FileUtils.rm_rf(path) }
         FileUtils.mkdir_p(path.to_path)
       end
 
       def define_pool
-        # FIXME implement some rollback scenario for every service
-        # Sometimes it's a good feature to have and sometimes the implementation will be unused
-        # rollback.run if failed
-        # rollback.add { Libvirt::StoragePool.find(name).undefine }
         Libvirt::StoragePool.define(name: name, path: path.join('images'), type: 'dir', user: user)
       end
 
@@ -54,6 +55,10 @@ module Zadar
         info  = Etc.getpwnam(login)
         name  = info.gecos.split(/,/).first
         OpenStruct.new(id: info.uid, gid: info.gid)
+      end
+
+      def create_log_dir
+        FileUtils.mkdir(path.join('log'))
       end
     end
   end

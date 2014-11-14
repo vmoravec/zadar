@@ -1,4 +1,16 @@
 module Zadar
+  class ServiceFailure < StandardError
+    attr_reader :service
+
+    def initialize service, message
+      @service = service
+      super(message)
+    end
+  end
+
+  class UnexpectedFailure < StandardError
+  end
+
   class Service
     attr_accessor :failed
 
@@ -14,34 +26,52 @@ module Zadar
       messages << message
     end
 
-    def report_error message
-      messages << message
+    def failure! message
       self.failed = true
+      raise ServiceFailure.new(self, message)
     end
 
     def messages
-      return @messages if @messages
+      @messages ||= []
+    end
 
-      @messages = []
+    def errors
+      @errors ||= []
     end
 
     def tasks
-      return @tasks if @tasks
-
-      @tasks = []
+      @tasks ||= Tasks.new(self)
     end
 
     alias_method :services, :tasks
 
     def call
       yield
+    rescue ServiceFailure => e
+      errors << e.message
     rescue => e
-      report_error(e.message)
-
-      #TODO
-      #Implement zadar logger and use it here
+      self.failed = true
+      errors << "Service #{self.class.name} failed unexpectedly"
+      errors << e.message
+      errors << e.backtrace
     ensure
       return self
+    end
+
+    class Tasks
+      def initialize parent
+        @parent = parent
+        @tasks = []
+      end
+
+      def push task
+        @parent.failed = true if task.failed?
+        @tasks << task
+      end
+
+      def all
+        @tasks
+      end
     end
   end
 end

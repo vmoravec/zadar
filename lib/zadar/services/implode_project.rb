@@ -10,13 +10,14 @@ module Zadar
 
       def call
         super do
-          report_error("Project '#{project_name}' not found") and return unless File.exists?(project_path)
+          failure!("Project '#{project_name}' not found") unless File.exists?(project_path)
 
           #FIXME
           #Delete all volumes before removing the pool
           #Do not store any other files beside the libvirt volumes in that directory
           Libvirt::StoragePool.wipeout(project_name)
           FileUtils.rm_rf(project_path)
+          #TODO Add method for removing a project from rcfile into Rcfile class
           Rcfile.data.projects.reject! {|p| p[project_name]}
           Rcfile.data.default_project = nil if Rcfile.data.default_project == project_name
           Rcfile.file.save

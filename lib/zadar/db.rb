@@ -13,7 +13,11 @@ module Zadar
       private
 
       def migrations_dir
-        @migrations_dir ||= Pathnamew.new(__dir__).join('db/migrate')
+        @migrations_dir ||= Pathname.new(__dir__).join('db/migrate')
+      end
+
+      def schema_file
+        @schema_file ||= dir.join("schema.rb")
       end
 
       def load_configuration

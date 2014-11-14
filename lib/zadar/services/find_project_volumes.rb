@@ -1,19 +1,19 @@
-require 'zadar/services/discover_project'
-
 module Zadar
   module Services
     class FindProjectVolumes < Service
       attr_reader :project
 
-      def initialize options
-        @project_name = options[:project] || Rcfile.data.default_project || raise "Project not detected"
+      def initialize
+        @project = Project.detect
       end
 
       def call
         super do
-          discover_task = DiscoverProject.new(project_name)
-          services << discover_task.call
-          @project = discover_task.project
+          project.establish_database_connection
+          #TODO
+          #find volumes ? btw is this a correct approach?
+          #I mean we are going to work with images, machines, snapshots so on, talking
+          #about volumes is a libvirt terminology..
         end
       end
     end

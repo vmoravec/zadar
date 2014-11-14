@@ -49,6 +49,8 @@ module Zadar
 
     def load_content_from_file
       YAML.load_file(path)
+    rescue Errno::ENOENT
+      return {}
     end
 
     class RcStruct

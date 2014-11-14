@@ -1,0 +1,8 @@
+# Warning The database path is not used from this configuration file!
+# It's rather filled by Zadar::Project.establish_database_connection to determine
+# where to look for the sqlite3 database file
+production:
+  adapter: sqlite3
+  pool: 5
+  timeout: 5000
+  database: production.sqlite3

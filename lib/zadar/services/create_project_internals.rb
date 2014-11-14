@@ -2,21 +2,23 @@ require 'active_record'
 
 module Zadar
   module Services
-    class CreateNewAppStructure < Service
+    class CreateProjectInternals < Service
 
       attr_reader :path
       attr_reader :db_dir
 
-      def initialize path
-        @path = path
+      def initialize new_project_path
+        @path = new_project_path
         @db_dir = path.join('db')
       end
 
       def call
         super do
           create_db_dir
-          create_db(copy_db_config)
-          migrate_db
+          production_db_config = YAML.load(File.read(copy_db_config))
+          create_db(production_db_config)
+          schema_file = Pathname.new(__dir__).join("..", "db", "schema.rb").to_s
+          load_schema(production_db_config, schema_file)
           create_iso_dir
         end
       end
@@ -28,7 +30,8 @@ module Zadar
       end
 
       def create_db config
-        ActiveRecord::Base.configurations = ActiveRecord::Tasks::DatabaseTasks.database_configuration = YAML.load(File.read(config))
+        ActiveRecord::Base.logger = Logger.new(File.open(path.join('log', 'database.log'), 'a'))
+        ActiveRecord::Base.configurations = ActiveRecord::Tasks::DatabaseTasks.database_configuration = config
         ActiveRecord::Tasks::DatabaseTasks.db_dir = db_dir.to_s
         ActiveRecord::Tasks::DatabaseTasks.env = Zadar.env
         ActiveRecord::Tasks::DatabaseTasks.root = path
@@ -36,31 +39,15 @@ module Zadar
         Dir.chdir(db_dir) { ActiveRecord::Tasks::DatabaseTasks.create_current('production') }
       end
 
-      def migrate_db
-        begin
-        require 'active_record_migrations'
-        db_dir = self.db_dir
-        ::ActiveRecordMigrations.configure do |c|
-          c.db_dir = db_dir.to_s
-          c.schema_format = :ruby
-          c.yaml_config = db_dir.join("config.yml").to_path
-          c.environment = ENV['ZADAR_ENV']
-          c.migrations_paths = [Pathname.new(__dir__).join('../db/migrate').to_path] # the first entry will be used by the generator
-puts 'vm'
-        ActiveRecordMigrations.load_tasks
-        Rake::Task['db:migrate'].execute
-        end
-        rescue => e
-          puts e.message
-          puts e.backtrace
-        end
+      def load_schema config, schema_file
+        Dir.chdir(db_dir) { ActiveRecord::Tasks::DatabaseTasks.load_schema(:ruby, schema_file) }
       end
 
       def copy_db_config
         config_dir = File.join(__dir__, "..", "db")
-        config_file = Pathname.new(config_dir).join('config.yml')
+        config_file = Pathname.new(config_dir).join('production.config.yml')
         FileUtils.cp(config_file, db_dir.join('config.yml'))
-        db_dir.join('config.yml')
+        db_dir.join('config.yml').to_s
       end
 
       def create_iso_dir
