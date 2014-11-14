@@ -2,6 +2,7 @@ require "zadar/version"
 require "zadar/service"
 require "zadar/libvirt"
 require "zadar/rcfile"
+require "zadar/db"
 
 require 'libvirt'
 require 'pathname'
@@ -17,5 +18,10 @@ module Zadar
   def self.initialize
     Zadar::Libvirt.connect
     Zadar::Rcfile.load
+    Zadar::Db.dir = Zadar::Services::DetectProjectPath.new.call.project_path
+  end
+
+  def self.env
+    ENV['ZADAR_ENV']
   end
 end

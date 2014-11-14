@@ -17,6 +17,9 @@ module Zadar
           #Do not store any other files beside the libvirt volumes in that directory
           Libvirt::StoragePool.wipeout(project_name)
           FileUtils.rm_rf(project_path)
+          Rcfile.data.projects.reject! {|p| p[project_name]}
+          Rcfile.data.default_project = nil if Rcfile.data.default_project == project_name
+          Rcfile.file.save
 
           report "Project #{project_name} has been successfuly purged from its location at #{project_path}"
         end
