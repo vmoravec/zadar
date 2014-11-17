@@ -14,6 +14,11 @@
 ActiveRecord::Schema.define(version: 20141112082206) do
 
   create_table "users", force: true do |t|
+    t.string  "name"
+    t.string  "login"
+    t.string  "admin", default: "f"
+    t.integer "uid"
+    t.integer "gid"
   end
 
 end

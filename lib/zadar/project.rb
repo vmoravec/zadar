@@ -1,7 +1,5 @@
 require 'ostruct'
 require 'active_record'
-class User < ActiveRecord::Base
-end
 
 module Zadar
   class Project
@@ -19,7 +17,9 @@ module Zadar
       path = Pathname.new(project_config[name].path)
       return unless Dir.exist?(path)
 
-      new(path)
+      project = new(path)
+      project.establish_database_connection
+      project
     end
 
     attr_reader :path, :db
@@ -27,7 +27,7 @@ module Zadar
     def initialize path
       @path = path
       @db = OpenStruct.new
-      db.dir = path.join(DB_DIR)
+      db.dir = Zadar::Db.dir = path.join(DB_DIR)
       db.migrations_dir = path.join(db.dir, 'migrate')
       db.config_file = path.join(db.dir, DB_CONFIG_FILE)
       db.log_file = path.join(DB_LOG_DIR, DB_LOG_FILENAME)

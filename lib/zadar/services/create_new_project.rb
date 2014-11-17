@@ -1,4 +1,7 @@
 require 'etc'
+
+require 'zadar/db/seeds'
+require 'zadar/services/create_pool'
 require 'zadar/services/create_project_internals'
 
 module Zadar
@@ -6,13 +9,14 @@ module Zadar
     class CreateNewProject < Service
       attr_reader :name
 
-      attr_reader :path, :user, :rcfile
+      attr_reader :path, :user, :rcfile, :seeds
 
       def initialize options
-        @user = detect_user
+        @user = Zadar.local_user
         @name = options[:name] || Zadar::DEFAULT_NAME
         @path = options[:path] ? Pathname.new(options[:path]).join(name) : Zadar::DEFAULT_PATH.join(name)
         @rcfile = Rcfile.create(project_name: name, project_path: path.to_s)
+        @seeds = Seeds.seed_new_project(name: name)
       end
 
       def call
@@ -22,15 +26,14 @@ module Zadar
           end
 
           create_project_dir
-          pool = define_pool
-          pool.build
+          services.push(create_storage_pool.call)
 
           create_log_dir
 
-          create_project_internals_task = CreateProjectInternals.new(path)
-          tasks.push(create_project_internals_task.call)
+          services.push(create_project_internals.call)
 
           rcfile.save
+          seeds.seed!
 
           report "New project in with path #{path} has been created"
         end
@@ -46,15 +49,12 @@ module Zadar
         FileUtils.mkdir_p(path.to_path)
       end
 
-      def define_pool
-        Libvirt::StoragePool.define(name: name, path: path.join('storage'), type: 'dir', user: user)
+      def create_storage_pool
+        CreatePool.new(name: name, path: path, user: user)
       end
 
-      def detect_user
-        login = Etc.getlogin
-        info  = Etc.getpwnam(login)
-        name  = info.gecos.split(/,/).first
-        OpenStruct.new(id: info.uid, gid: info.gid)
+      def create_project_internals
+        CreateProjectInternals.new(path)
       end
 
       def create_log_dir

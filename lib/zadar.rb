@@ -1,13 +1,17 @@
+require 'libvirt'
+require 'pathname'
+require 'fileutils'
+require 'forwardable'
+require 'active_record'
+
 require "zadar/version"
+require "zadar/utils"
+require "zadar/models"
 require "zadar/service"
 require "zadar/libvirt"
 require "zadar/rcfile"
 require "zadar/project"
 require "zadar/db"
-
-require 'libvirt'
-require 'pathname'
-require 'fileutils'
 
 module Zadar
   DEFAULT_NAME = "zadar"
@@ -16,26 +20,17 @@ module Zadar
 
   module Services; end
 
-  def self.initialize
-    Zadar::Libvirt.connect
-    Zadar::Rcfile.load
-    Zadar::Db.dir = current_project.db_dir if current_project
-    Zadar.env = ENV['ZADAR_ENV'] || Zadar::Rcfile.data.environment || 'production'
-  end
+  class << self
+    attr_reader :current_project
+    attr_accessor :env
+    attr_reader :local_user
 
-  def self.current_project
-    @current_project
-  end
-
-  def self.detect_project path
-    @current_project = Project.detect(path)
-  end
-
-  def self.env
-    @env
-  end
-
-  def self.env= environment
-    @env = environment
+    def initialize
+      Zadar::Libvirt.connect
+      Zadar::Rcfile.load
+      @env = ENV['ZADAR_ENV'] || Zadar::Rcfile.data.environment || 'production'
+      @current_project = Project.detect
+      @local_user = Utils::LocalUser.new
+    end
   end
 end
