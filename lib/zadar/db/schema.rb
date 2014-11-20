@@ -11,7 +11,24 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20141112082206) do
+ActiveRecord::Schema.define(version: 20141120222329) do
+
+  create_table "machines", force: true do |t|
+    t.string  "name"
+    t.string  "os_name"
+    t.string  "os_version"
+    t.string  "os_type",    default: "linux"
+    t.integer "iso_id"
+    t.string  "memory"
+    t.string  "cpus"
+    t.string  "disk_size"
+  end
+
+  create_table "projects", force: true do |t|
+    t.string  "name"
+    t.string  "path"
+    t.integer "user_id"
+  end
 
   create_table "users", force: true do |t|
     t.string  "name"

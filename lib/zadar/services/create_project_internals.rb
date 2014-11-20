@@ -30,6 +30,7 @@ module Zadar
       end
 
       def create_db config
+        config['production']['database'] = db_dir.join('production.sqlite3').to_s
         ActiveRecord::Base.logger = Logger.new(File.open(path.join('log', 'database.log'), 'a'))
         ActiveRecord::Base.configurations = ActiveRecord::Tasks::DatabaseTasks.database_configuration = config
         ActiveRecord::Tasks::DatabaseTasks.db_dir = db_dir.to_s
@@ -40,7 +41,7 @@ module Zadar
       end
 
       def load_schema config, schema_file
-        Dir.chdir(db_dir) { ActiveRecord::Tasks::DatabaseTasks.load_schema(:ruby, schema_file) }
+        ActiveRecord::Tasks::DatabaseTasks.load_schema(:ruby, schema_file)
       end
 
       def copy_db_config

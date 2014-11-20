@@ -3,13 +3,16 @@ require 'etc'
 module Zadar
   class Seeds
     def self.seed_new_project options
-      new(options)
+      NewProjectSeed.new(options)
     end
+  end
 
-    attr_reader :project_name
+  class NewProjectSeed
+    attr_reader :project_name, :path
 
     def initialize options={}
       @project_name = options[:name]
+      @path = options[:path]
     end
 
     def seed!
@@ -24,7 +27,7 @@ module Zadar
     end
 
     def create_project user
-      # Project.create(name: project_name, user: user)
+      Models::Project.create(name: project_name, user: user, path: path)
     end
   end
 end

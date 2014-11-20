@@ -17,6 +17,14 @@ module Zadar
       @file.struct.data
     end
 
+    def self.content_empty?
+      @file.struct.data.to_h.empty?
+    end
+
+    def self.any_content?
+      !content_empty?
+    end
+
     def self.file
       @file
     end

@@ -16,7 +16,7 @@ module Zadar
         @name = options[:name] || Zadar::DEFAULT_NAME
         @path = options[:path] ? Pathname.new(options[:path]).join(name) : Zadar::DEFAULT_PATH.join(name)
         @rcfile = Rcfile.create(project_name: name, project_path: path.to_s)
-        @seeds = Seeds.seed_new_project(name: name)
+        @seeds = Seeds.seed_new_project(name: name, path: path.to_s)
       end
 
       def call

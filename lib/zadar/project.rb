@@ -10,6 +10,8 @@ module Zadar
     DB_CONFIG_FILE = 'config.yml'
 
     def self.detect name=nil
+      return if Rcfile.content_empty?
+
       name = Rcfile.data.default_project if name.nil?
       project_config = Rcfile.data.projects.find {|project| project[name]}
       return if project_config.nil?
@@ -17,14 +19,15 @@ module Zadar
       path = Pathname.new(project_config[name].path)
       return unless Dir.exist?(path)
 
-      project = new(path)
+      project = new(path, name)
       project.establish_database_connection
       project
     end
 
-    attr_reader :path, :db
+    attr_reader :path, :db, :name
 
-    def initialize path
+    def initialize path, name
+      @name = name
       @path = path
       @db = OpenStruct.new
       db.dir = Zadar::Db.dir = path.join(DB_DIR)
@@ -33,9 +36,13 @@ module Zadar
       db.log_file = path.join(DB_LOG_DIR, DB_LOG_FILENAME)
     end
 
+    def model
+      @model ||= Models::Project.find_by(name: name)
+    end
+
     def establish_database_connection
       content = YAML.load_file(db.config_file)[Zadar.env]
-      content['database'] = db.dir.join(SQLITE3_DATABASE_FILE)
+      content['database'] = db.dir.join(SQLITE3_DATABASE_FILE).to_s
       ActiveRecord::Base.establish_connection(content)
       ActiveRecord::Base.logger = Logger.new(File.open(db.log_file, 'a'))
     end

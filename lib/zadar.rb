@@ -28,7 +28,7 @@ module Zadar
     def initialize
       Zadar::Libvirt.connect
       Zadar::Rcfile.load
-      @env = ENV['ZADAR_ENV'] || Zadar::Rcfile.data.environment || 'production'
+      @env = ENV['ZADAR_ENV'] || (Rcfile.any_content? && Zadar::Rcfile.data.environment) || 'production'
       @current_project = Project.detect
       @local_user = Utils::LocalUser.new
     end
