@@ -12,6 +12,7 @@ module Zadar
         super do
           if Models::Machine.count.zero?
             report "No machines found for project '#{project.model.name}'"
+            return
           else
             @machines = Models::Machine.all
           end

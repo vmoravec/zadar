@@ -19,12 +19,10 @@ module Zadar
       path = Pathname.new(project_config[name].path)
       return unless Dir.exist?(path)
 
-      project = new(path, name)
-      project.establish_database_connection
-      project
+      new(path, name)
     end
 
-    attr_reader :path, :db, :name
+    attr_reader :path, :db, :name, :model
 
     def initialize path, name
       @name = name
@@ -34,16 +32,18 @@ module Zadar
       db.migrations_dir = path.join(db.dir, 'migrate')
       db.config_file = path.join(db.dir, DB_CONFIG_FILE)
       db.log_file = path.join(DB_LOG_DIR, DB_LOG_FILENAME)
-    end
-
-    def model
-      @model ||= Models::Project.find_by(name: name)
+      configure_logger
+      establish_database_connection
+      @model = Models::Project.find_by(name: name)
     end
 
     def establish_database_connection
       content = YAML.load_file(db.config_file)[Zadar.env]
       content['database'] = db.dir.join(SQLITE3_DATABASE_FILE).to_s
       ActiveRecord::Base.establish_connection(content)
+    end
+
+    def configure_logger
       ActiveRecord::Base.logger = Logger.new(File.open(db.log_file, 'a'))
     end
   end
