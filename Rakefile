@@ -4,3 +4,4 @@ require 'zadar'
 
 Zadar::Db.dir = Pathname.new(__dir__).join("lib/zadar/db")
 Zadar::Db.load
+

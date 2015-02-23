@@ -1,5 +1,7 @@
 module Zadar
   class Db
+    MIGRATIONS_DIR = Pathname.new(__dir__).join('db/migrate')
+
     class << self
       attr_accessor :dir
 
@@ -13,7 +15,7 @@ module Zadar
       private
 
       def migrations_dir
-        @migrations_dir ||= Pathname.new(__dir__).join('db/migrate')
+        @migrations_dir ||= MIGRATIONS_DIR
       end
 
       def schema_file
@@ -21,8 +23,6 @@ module Zadar
       end
 
       def load_configuration
-        require 'active_record_migrations'
-
         dir = self.dir
 
         ActiveRecordMigrations.configure do |c|

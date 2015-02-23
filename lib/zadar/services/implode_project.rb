@@ -16,6 +16,7 @@ module Zadar
           #Delete all volumes before removing the pool
           #Do not store any other files beside the libvirt volumes in that directory
           Libvirt::StoragePool.wipeout(project_name)
+          puts project_path.inspect
           FileUtils.rm_rf(project_path)
           #TODO Add method for removing a project from rcfile into Rcfile class
           Rcfile.data.projects.reject! {|p| p[project_name]}

@@ -23,11 +23,13 @@ module Zadar
     private
 
     def create_admin
-      Models::User.create(Zadar.local_user.to_hash.merge(admin: true))
+      puts Zadar.local_user.to_hash.merge(admin: true).inspect
+
+      Zadar::Models::User.create(Zadar.local_user.to_hash.merge(admin: true))
     end
 
     def create_project user
-      Models::Project.create(name: project_name, user: user, path: path)
+      Zadar::Models::Project.create(name: project_name, user: user, path: path)
     end
   end
 end

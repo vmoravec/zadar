@@ -1,7 +1,6 @@
 module Zadar
   module Models
-    class Machine < ActiveRecord::Base
-      # has_one :iso
+    class Machine < Sequel::Model
     end
   end
 end

@@ -7,6 +7,8 @@ module Zadar
 
       def call
         super do
+          abort "No project found, console not available" unless Zadar.current_project
+
           require 'irb'
           IRB.start
         end

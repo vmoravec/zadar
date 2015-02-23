@@ -1,28 +1,24 @@
-require 'active_record'
-
-include ActiveRecord::Tasks
-db_dir = Pathname.new(File.expand_path("../../db", __FILE__))
-DatabaseTasks.env = 'development'
-DatabaseTasks.database_configuration = YAML.load_file(db_dir.join('database.yml'))
-DatabaseTasks.db_dir = db_dir.to_path
-DatabaseTasks.migrations_paths = db_dir.join('migrate')
-
 namespace :db do
-  task :load_config do
-    ActiveRecord::Base.configurations = ActiveRecord::Tasks::DatabaseTasks.database_configuration || {}
-    ActiveRecord::Migrator.migrations_paths = ActiveRecord::Tasks::DatabaseTasks.migrations_paths
+  desc "Run migrations upwards"
+  task :migrate, [:version] do |t, args|
+    require "sequel"
+
+    abort "No migrations to run" if Sequel::Migrator.is_current?
+
+    Sequel.extension :migration
+    db = Sequel.connect(ENV.fetch("DATABASE_URL"))
+    if args[:version]
+      puts "Migrating to version #{args[:version]}"
+      Sequel::Migrator.run(db, "db/migrations", target: args[:version].to_i)
+    else
+      puts "Migrating to latest"
+      Sequel::Migrator.run(db, "db/migrations")
+    end
   end
 
-  desc "Create new migration file"
-  task :new_migration do
-    puts 'Creating new migration'
+  desc "Rollback migrations"
+  task :rollback do
   end
 
-  desc "Run migration"
-  task :migrate do
-    Rake::Task["db:schema:dump"].invoke
-  end
 
-  task :environment do
-  end
 end

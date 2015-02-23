@@ -1,5 +1,3 @@
-require 'active_record'
-
 module Zadar
   module Services
     class CreateProjectInternals < Service
@@ -15,32 +13,30 @@ module Zadar
       def call
         super do
           create_db_dir
-          production_db_config = YAML.load(File.read(copy_db_config))
-          create_db(production_db_config)
-          schema_file = Pathname.new(__dir__).join("..", "db", "schema.rb").to_s
-          load_schema(production_db_config, schema_file)
+          create_db
+          load_schema
           create_iso_dir
+          create_images_dir
+          create_snapshots_dir
         end
       end
 
       private
 
       def create_db_dir
+        puts "Creating dir #{db_dir}"
         FileUtils.mkdir_p(db_dir)
       end
 
-      def create_db config
-        config['production']['database'] = db_dir.join('production.sqlite3').to_s
-        ActiveRecord::Base.logger = Logger.new(File.open(path.join('log', 'database.log'), 'a'))
-        ActiveRecord::Base.configurations = ActiveRecord::Tasks::DatabaseTasks.database_configuration = config
-        ActiveRecord::Tasks::DatabaseTasks.db_dir = db_dir.to_s
-        ActiveRecord::Tasks::DatabaseTasks.env = Zadar.env
-        ActiveRecord::Tasks::DatabaseTasks.root = path
-        ActiveRecord::Tasks::DatabaseTasks.current_config(config: ActiveRecord::Tasks::DatabaseTasks.database_configuration)
-        Dir.chdir(db_dir) { ActiveRecord::Tasks::DatabaseTasks.create_current('production') }
+      def create_db
+        puts "Creating database at #{db_dir.join("#{Zadar.env}.sqlite3")}"
+        SQLite3::Database.new(db_dir.join("#{Zadar.env}.sqlite3").to_s)
       end
 
+      #TODO
       def load_schema config, schema_file
+        puts "Run migrations to create the tables"
+          Pathname.new(__dir__).join("..", "db", "schema.rb")
         ActiveRecord::Tasks::DatabaseTasks.load_schema(:ruby, schema_file)
       end
 

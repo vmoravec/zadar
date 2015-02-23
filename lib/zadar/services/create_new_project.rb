@@ -21,6 +21,8 @@ module Zadar
 
       def call
         super do
+          rcfile.save
+
           if File.exist?(path.to_path)
             failure! "Directory with name '#{name}' already exists in path #{path}"
           end
@@ -30,9 +32,11 @@ module Zadar
 
           create_log_dir
 
-          services.push(create_project_internals.call)
+          Zadar::Project.detect(name)
+puts create_project_internals.call.inspect
+          #services.push(create_project_internals.call)
 
-          rcfile.save
+
           seeds.seed!
 
           report "New project in with path #{path} has been created"
