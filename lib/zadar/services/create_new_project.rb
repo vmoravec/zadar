@@ -22,24 +22,20 @@ module Zadar
       def call
         super do
           rcfile.save
-
           if File.exist?(path.to_path)
             failure! "Directory with name '#{name}' already exists in path #{path}"
           end
-
           create_project_dir
-          services.push(create_storage_pool.call)
-
+          services.push(CreatePool.new(name: name, path: path, user: user).call)
           create_log_dir
-
-          Zadar::Project.detect(name)
-puts create_project_internals.call.inspect
-          #services.push(create_project_internals.call)
-
-
+          services.push(CreateProjectInternals.new(path, name).call)
           seeds.seed!
-
-          report "New project in with path #{path} has been created"
+          if succeeded?
+            report "New project in with path #{path} has been created"
+          else
+            report "Creating a new project failed"
+            puts tasks.size
+          end
         end
       end
 
@@ -51,14 +47,6 @@ puts create_project_internals.call.inspect
         # rollback.run if failed
         # rollback.add { FileUtils.rm_rf(path) }
         FileUtils.mkdir_p(path.to_path)
-      end
-
-      def create_storage_pool
-        CreatePool.new(name: name, path: path, user: user)
-      end
-
-      def create_project_internals
-        CreateProjectInternals.new(path)
       end
 
       def create_log_dir

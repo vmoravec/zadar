@@ -1,4 +1,5 @@
 require 'sequel'
+require 'sqlite3'
 require 'libvirt'
 require 'pathname'
 require 'fileutils'

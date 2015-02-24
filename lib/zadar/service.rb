@@ -51,7 +51,6 @@ module Zadar
       errors << e.message
     rescue => e
       self.failed = true
-      errors << "Service #{self.class.name} failed unexpectedly"
       errors << e.message
       errors << e.backtrace
     ensure
