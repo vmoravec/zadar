@@ -25,7 +25,7 @@ module Zadar
       @name = name
       @path = path
       @db = OpenStruct.new
-      db.dir = Zadar::Db.dir = path.join(DB_DIR)
+      db.dir = path.join(DB_DIR)
       db.migrations_dir = path.join(db.dir, 'migrate')
       db.log_file = path.join(DB_LOG_DIR, DB_LOG_FILENAME)
       db.logger = ::Logger.new(File.open(db.log_file, 'a'))

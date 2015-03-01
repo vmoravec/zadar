@@ -11,7 +11,6 @@ require "zadar/service"
 require "zadar/libvirt"
 require "zadar/rcfile"
 require "zadar/project"
-require "zadar/db"
 
 module Zadar
   DEFAULT_NAME = "zadar"
