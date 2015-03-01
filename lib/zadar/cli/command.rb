@@ -1,7 +1,10 @@
 require 'gli'
+require 'columnize'
 
 module Zadar
   module Cli
+    class CommandFailure < StandardError; end
+
     class Command
       include ::GLI::App
 
@@ -11,11 +14,9 @@ module Zadar
       attr_reader :argv
       attr_accessor :name
       attr_accessor :exit_code
-      attr_reader :results
-      attr_reader :errors
+      attr_accessor :result
 
       def initialize argv
-        @results = []
         @errors  = []
         @exit_code = 0
         @argv = argv
@@ -27,8 +28,10 @@ module Zadar
 
       def dsl &block
         instance_eval &block
-        run
-        exit
+        if name != 'help'
+          run(argv)
+          exit
+        end
       end
 
       def load
@@ -40,33 +43,44 @@ module Zadar
         end
       end
 
-      def run
-        catch(:failure) do
-          super(argv)
-        end
-
-        failed = results.find(&:failed?)
-        self.exit_code = 1 if failed || !errors.empty?
-
-        error_messages = results.select(&:failed?).map(&:errors)
-        errors.concat(error_messages)
-
-        messages = results.map(&:messages).flatten
-
-        STDOUT.puts(messages.join("\n")) unless messages.empty?
-        STDERR.puts(errors.join("\n")) unless errors.empty?
-
-      rescue => e
-        display_error(e)
+      def failure message
+        raise CommandFailure, message
       end
 
+      def execute
+        @result = yield
+        result.call
+        puts result.messages.join ("\n") unless result.messages.empty?
+      end
+
+      alias_method :call, :execute
+
       private
+
+      def manage_errors
+        on_error do |error|
+          self.exit_code = 1
+          case error
+            when Zadar::ServiceFailure
+              puts error.message
+            when CommandFailure
+              puts error.message
+            when Sequel::ValidationFailed
+              puts "Command #{name} failed: #{error.message}"
+            else display_error(error)
+          end
+        end
+      end
+
 
       def detect_command_name
         self.name = argv.first.to_s.start_with?('--') || argv.first.to_s.start_with?('-') ? nil : argv.first
       end
 
       def load_help
+        self.name = 'help'
+        load_path.children.each {|command| require command }
+        run(argv)
       end
 
       def load_command_file
@@ -86,24 +100,11 @@ module Zadar
       def configure_gli
         program_desc "Virtualization management and sharing system"
         version      ::Zadar::VERSION
-        flag [:p, :project]
-      end
-
-      def manage_errors
-        on_error do |error|
-          display_error(error)
-        end
       end
 
       def exit code=nil
         self.exit_code = code if code
         Kernel.exit(exit_code)
-      end
-
-      def failure message
-        self.exit_code = 1
-        errors << message
-        throw :failure
       end
 
       def display_error error
@@ -113,7 +114,9 @@ module Zadar
         when OptionParser::MissingArgument
           puts "Incomplete command, #{error.message}"
         else
-          puts "This is a bug.\n#{error.class}: #{error.message}"
+          puts "This is a bug."
+          puts "Thanks for reporting this to https://github.com/vmoravec/zadar/issues"
+          puts "#{error.class}: #{error.message}"
           puts "Backtrace: #{error.backtrace.join "\n"}"
         end
       end

@@ -1,7 +1,7 @@
 module Zadar
   module Models
-    class Project < ActiveRecord::Base
-      belongs_to :user
+    class Project < Sequel::Model
+      many_to_one :user
     end
   end
 end

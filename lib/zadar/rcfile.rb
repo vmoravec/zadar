@@ -41,6 +41,7 @@ module Zadar
 
     def save
       File.open(path, 'w') {|file| YAML.dump(struct.to_hash, file) }
+      self.class.load
     end
 
     alias_method :update, :save

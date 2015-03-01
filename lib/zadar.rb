@@ -1,17 +1,16 @@
+require 'sequel'
+require 'sqlite3'
 require 'libvirt'
 require 'pathname'
 require 'fileutils'
 require 'forwardable'
-require 'active_record'
 
 require "zadar/version"
 require "zadar/utils"
-require "zadar/models"
 require "zadar/service"
 require "zadar/libvirt"
 require "zadar/rcfile"
 require "zadar/project"
-require "zadar/db"
 
 module Zadar
   DEFAULT_NAME = "zadar"

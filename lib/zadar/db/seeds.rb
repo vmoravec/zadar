@@ -23,11 +23,17 @@ module Zadar
     private
 
     def create_admin
-      Models::User.create(Zadar.local_user.to_hash.merge(admin: true))
+      update_model(:User)
+      Zadar::Models::User.create(Zadar.local_user.to_hash.merge!(admin: true))
     end
 
     def create_project user
-      Models::Project.create(name: project_name, user: user, path: path)
+      update_model(:Project)
+      Zadar::Models::Project.create(name: project_name, user: user, path: path)
+    end
+
+    def update_model model_name
+      instance_eval "Zadar::Models::#{model_name}.columns"
     end
   end
 end

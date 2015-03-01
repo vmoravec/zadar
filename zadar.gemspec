@@ -19,8 +19,9 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
 
-  spec.add_runtime_dependency "rails", "~> 4.2"
-  spec.add_runtime_dependency "active_record_migrations", "~> 4.2"
+  spec.add_runtime_dependency "grape", "~> 0.1"
+  spec.add_runtime_dependency "websocket-rack", "~> 0.4"
+  spec.add_runtime_dependency "sequel", "~> 4.1"
   spec.add_runtime_dependency "ruby-libvirt", "~> 0.5"
   spec.add_runtime_dependency "gli", "~> 2.1"
   spec.add_runtime_dependency "nokogiri"
