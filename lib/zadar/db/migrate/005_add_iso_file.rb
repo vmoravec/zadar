@@ -5,8 +5,14 @@ Sequel.migration do
       foreign_key :iso_repo_id, :iso_repos
       index       :filename, unique: true
 
-      String :filename,   null: false
-      String :name,       null: false
+      String  :filename,   null: false
+      String  :name,       null: false
+      Integer :size,       null: false, default: 0
+      Integer :ctime,     null: false
+      Integer :mtime,     null: false
+      String  :md5
+      String  :sha1
+      String  :sha256
     end
   end
 end

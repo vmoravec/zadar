@@ -7,6 +7,10 @@ module Zadar
 
       alias_method :files, :iso_local_files
 
+      def before_destroy
+        remove_all_iso_local_files
+      end
+
       def uri
         URI_SCHEME + path
       end
