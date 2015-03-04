@@ -1,6 +1,6 @@
 module Zadar
   module Services
-    class AddNewIsoRepo < Service
+    class AddLocalIsoRepo < Service
       attr_reader :path, :name
 
       def initialize options
@@ -15,7 +15,7 @@ module Zadar
 
       def call
         super do
-          Models::IsoRepo.create(path: path, name: name)
+          Models::LocalIsoRepo.create(path: path, name: name)
           report "New iso repository has been created"
         end
       end

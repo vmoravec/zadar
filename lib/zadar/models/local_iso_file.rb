@@ -1,11 +1,11 @@
 module Zadar
   module Models
-    class IsoLocalFile < Sequel::Model
+    class LocalIsoFile < Sequel::Model
       EXT = ".iso"
 
-      many_to_one :iso_repo
+      many_to_one :local_iso_repo
 
-      alias_method :repo, :iso_repo
+      alias_method :repo, :local_iso_repo
 
       def full_path
         return unless repo
@@ -28,9 +28,9 @@ module Zadar
         errors.add(:ctime, "is missing")    unless ctime
         errors.add(:mtime, "is missing")    unless mtime
         errors.add(:filename, "is missing") if filename.nil? || filename.length.zero?
-        errors.add(:iso_repo, "is missing") unless iso_repo
+        errors.add(:local_iso_repo, "is missing") unless local_iso_repo
 
-        if new? && repo && repo.iso_local_files_dataset.where(filename: filename).first
+        if new? && repo && repo.local_iso_files_dataset.where(filename: filename).first
           errors.add(:filename, "already exists")
         end
 

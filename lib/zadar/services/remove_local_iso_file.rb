@@ -8,7 +8,7 @@ module Zadar
         failure! "Iso filename is missing" if options[:filename].to_s.empty?
 
         @delete = options[:delete]
-        @repo = Models::IsoRepo.find(name: options[:repo])
+        @repo = Models::LocalIsoRepo.find(name: options[:repo])
         @file = repo.iso_local_files_dataset.where(filename: options[:filename]).first
 
         failure! "Iso file not found" unless file

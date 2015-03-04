@@ -9,7 +9,7 @@ module Zadar
         @name = options[:name]
         failure! "Repository name not specified" if name.to_s.empty?
 
-        @repo = Models::IsoRepo.find(name: name)
+        @repo = Models::LocalIsoRepo.find(name: name)
         failure! "Repo with name '#{name}' not found" unless repo
       end
 

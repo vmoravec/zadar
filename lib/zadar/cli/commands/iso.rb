@@ -1,18 +1,30 @@
 zadar do
   desc "Manage iso files and repositories"
   command :iso do |iso|
-    iso.desc "Add iso repositories"
-    iso.command :addrepo, :ar do |addrepo|
-      addrepo.flag [:p, :path]
-      addrepo.action do |_, opts,args|
-        require 'zadar/services/add_new_iso_repo'
+    iso.desc "Add remote repository"
+    iso.command :addremoterepo, :arr do |addrepo|
+      addrepo.flag [:u, :url]
+      addrepo.action do |_, opts, args|
+        require 'zadar/services/add_remote_iso_repo'
 
-        call { Zadar::Services::AddNewIsoRepo.new(opts.merge(name: args.first)) }
+        name = args.first.to_s
+        call { Zadar::Services::AddRemoteIsoRepo.new(opts.merge(name: name)) }
       end
     end
 
-    iso.desc "Add iso files"
-    iso.command :addfile, :af do |addfile|
+
+    iso.desc "Add local iso repository"
+    iso.command :addlocalrepo, :alr do |addrepo|
+      addrepo.flag [:p, :path]
+      addrepo.action do |_, opts,args|
+        require 'zadar/services/add_local_iso_repo'
+
+        call { Zadar::Services::AddLocalIsoRepo.new(opts.merge(name: args.first)) }
+      end
+    end
+
+    iso.desc "Add local iso files"
+    iso.command :addlocalfile, :alf do |addfile|
       addfile.flag [:r, :repo]
       addfile.flag [:n, :name]
       addfile.arg_name "filename"
@@ -24,27 +36,27 @@ zadar do
       end
     end
 
-    iso.desc "List iso repos"
-    iso.command :"listrepos", :lr do |list|
+    iso.desc "List local iso repos"
+    iso.command :"listlocalrepos", :llr do |list|
       list.action do |_, options, _|
-        require 'zadar/services/find_iso_repos'
+        require 'zadar/services/find_local_iso_repos'
 
-        repos = Zadar::Services::FindIsoRepos.new.call.repos
+        repos = Zadar::Services::FindLocalIsoRepos.new.call.repos
         failure! "No iso repository found" if repos.empty?
 
-        puts Zadar::Models::IsoRepo.columns.columnize
+        puts Zadar::Models::LocalIsoRepo.columns.columnize
         repos.each {|r| puts r.to_hash.values.columnize }
       end
     end
 
-    iso.desc "List iso files"
-    iso.command :"listfiles", :lf do |list|
+    iso.desc "List local iso files"
+    iso.command :"listlocalfiles", :llf do |list|
       list.flag [:r, :repo]
       list.action do |_, options, _|
-        require 'zadar/services/find_iso_files'
+        require 'zadar/services/find_local_iso_files'
 
-        failure "Iso repository not specified" unless options[:repo]
-        files =  Zadar::Services::FindIsoFiles.new(options).call.files
+        failure! "Iso repository not specified" unless options[:repo]
+        files =  Zadar::Services::FindLocalIsoFiles.new(options).call.files
         failure! "No iso files found" if files.empty?
 
         puts Zadar::Models::IsoLocalFile.columns.columnize
@@ -52,17 +64,17 @@ zadar do
       end
     end
 
-    iso.desc "Remove iso repositories"
+    iso.desc "Remove local iso repositories"
     iso.command :removerepo, :rr do |rm_repo|
       rm_repo.switch :delete
       rm_repo.action do |_, opts, args|
-        require "zadar/services/remove_iso_repo"
+        require "zadar/services/remove_local_iso_repo"
 
-        call { Zadar::Services::RemoveIsoRepo.new(opts.merge(name: args.first)) }
+        call { Zadar::Services::RemoveLocalIsoRepo.new(opts.merge(name: args.first)) }
       end
     end
 
-    iso.desc "Remove iso files"
+    iso.desc "Remove local iso files"
     iso.command :removefile, :rf do |rm_file|
       rm_file.switch :delete
       rm_file.flag [:r, :repo]

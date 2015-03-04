@@ -1,11 +1,11 @@
 module Zadar
   module Services
-    class FindIsoFiles < Service
+    class FindLocalIsoFiles < Service
       attr_reader :repo, :files
 
       def initialize options
-        @repo = Models::IsoRepo.find(name: options[:repo])
-        failure! "Repository with name '#{repo}' not found" unless repo
+        @repo = Models::LocalIsoRepo.find(name: options[:repo])
+        failure! "Repository with name '#{options[:repo]}' not found" unless repo
       end
 
       def call

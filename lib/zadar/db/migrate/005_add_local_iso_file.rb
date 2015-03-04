@@ -1,8 +1,8 @@
 Sequel.migration do
   change do
-    create_table :iso_local_files do
+    create_table :local_iso_files do
       primary_key :id
-      foreign_key :iso_repo_id, :iso_repos
+      foreign_key :local_iso_repo_id, :local_iso_repos
       index       :filename, unique: true
 
       String  :filename,   null: false

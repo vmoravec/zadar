@@ -1,11 +1,11 @@
 module Zadar
   module Services
-    class FindIsoRepos < Service
+    class FindLocalIsoRepos < Service
       attr_reader :repos
 
       def call
         super do
-          @repos = Models::IsoRepo.all
+          @repos = Models::LocalIsoRepo.all
         end
       end
     end

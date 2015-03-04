@@ -8,13 +8,13 @@ module Zadar
         @filename = options[:filename]
         failure! "Filename is mandatory" if filename.to_s.empty?
 
-        @repo = Models::IsoRepo.find(name: options[:repo])
+        @repo = Models::LocalIsoRepo.find(name: options[:repo])
         failure! "Repository '#{options[:repo]}' not found" unless repo
       end
 
       def call
         super do
-          new_file = Models::IsoLocalFile.create(iso_repo: repo, filename: filename, name: name)
+          new_file = Models::LocalIsoFile.create(iso_repo: repo, filename: filename, name: name)
           report "Iso file at #{new_file.full_path} has added to repository '#{repo.name}'"
         end
       end
