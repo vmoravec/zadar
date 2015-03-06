@@ -4,7 +4,7 @@ module Zadar
 
       DB_DIR = "db"
 
-      attr_reader :path, :name
+      attr_reader :path, :name, :iso_dir
 
       def initialize path, name
         @path = path
@@ -16,9 +16,6 @@ module Zadar
           create_db_dir
           create_db
           load_schema
-          create_iso_dir
-          create_images_dir
-          create_snapshots_dir
         end
       end
 
@@ -42,13 +39,6 @@ module Zadar
         Sequel::Migrator.run(project.db.connection, migration_dir)
         puts "Migrations done"
       end
-
-      def create_iso_dir
-        FileUtils.mkdir(path.join('iso'))
-      end
-
-      def create_images_dir;    end
-      def create_snapshots_dir; end
     end
   end
 end

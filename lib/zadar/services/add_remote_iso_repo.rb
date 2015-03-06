@@ -1,3 +1,6 @@
+require 'zadar/services/detect_iso_remote_type'
+require 'zadar/adapters/remote_iso_repo'
+
 module Zadar
   module Services
     class AddRemoteIsoRepo < Service
@@ -13,18 +16,25 @@ module Zadar
 
       def call
         super do
-          # 1. Detect what kind of repo it is (sles, opensuse, debian, fedora, susecloud),
-          #    look at the url to find this out or add flag :type
-          # 2. Select the correct adapter for parsing the url (todo: create an abstract class
-          #    with methods that will need implementation from the adapter objects)
-          # 2.1 Use the adapter and run tests and checks -> fail if these does not succeed
-          #     Don't save any results from the tests into the database yet.(includes parsing
-          #     the html data into database)
-          # 2.1 Localy create a new dir for this iso repository for files that might be
-          #    needed from the adapter
-          # 3. Apply the adapter on the url -> save the extracted data into db and on disk
+          repo_type = Services::DetectIsoRemoteType.new(url: url).call.type
+          report "Detected repository type '#{repo_type}'"
+          remote = Adapters::RemoteIsoRepo.new(type: repo_type.to_s, url: url)
+          remote.validate!
+          create_repo_dir
+          new_repo = Models::RemoteIsoRepo.create(url: url, name: name)
+          remote.files.each do |file|
+            Models::RemoteIsoFile.create(file.to_h)
+          end
           report "Repository '#{name}' has been created successfuly"
+          report "#{remote.files.size} files has been detected"
         end
+      end
+
+      def create_repo_dir
+        FileUtils.mkdir_p(File.join(
+          Zadar.current_project.path,
+          'iso',
+          name.split.join("-").downcase))
       end
     end
   end
