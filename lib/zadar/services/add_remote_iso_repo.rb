@@ -31,6 +31,9 @@ module Zadar
       end
 
       def create_repo_dir
+        existing_repo = Models::RemoteIsoRepo.find(dirname: nil)
+        failure! "Repository path already exists" if Dir.exists?(existing_repo)
+
         FileUtils.mkdir_p(File.join(
           Zadar.current_project.path,
           'iso',
