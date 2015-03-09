@@ -56,6 +56,7 @@ zadar do
         require 'zadar/services/find_local_iso_files'
 
         failure! "Iso repository not specified" unless options[:repo]
+
         files =  Zadar::Services::FindLocalIsoFiles.new(options).call.files
         failure! "No iso files found" if files.empty?
 

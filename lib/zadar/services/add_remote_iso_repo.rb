@@ -1,5 +1,6 @@
 require 'zadar/services/detect_iso_remote_type'
 require 'zadar/adapters/remote_iso_repo'
+require 'zadar/adapters/opensuse'
 
 module Zadar
   module Services
