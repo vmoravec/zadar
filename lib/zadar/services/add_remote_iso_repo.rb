@@ -21,24 +21,21 @@ module Zadar
           report "Detected repository type '#{repo_type}'"
           remote = Adapters::RemoteIsoRepo.new(type: repo_type.to_s, url: url)
           remote.validate!
-          create_repo_dir
           new_repo = Models::RemoteIsoRepo.create(url: url, name: name)
+          create_repo_dir(new_repo)
           remote.files.each do |file|
-            Models::RemoteIsoFile.create(file.to_h)
+            Models::RemoteIsoFile.create(file.to_h.merge(:remote_iso_repo: new_repo))
           end
           report "Repository '#{name}' has been created successfuly"
           report "#{remote.files.size} files has been detected"
         end
       end
 
-      def create_repo_dir
-        existing_repo = Models::RemoteIsoRepo.find(dirname: nil)
-        failure! "Repository path already exists" if Dir.exists?(existing_repo)
-
+      def create_repo_dir repo
         FileUtils.mkdir_p(File.join(
           Zadar.current_project.path,
           'iso',
-          name.split.join("-").downcase))
+          repo.local_path))
       end
     end
   end

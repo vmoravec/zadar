@@ -10,6 +10,7 @@ module Zadar
       end
 
       def validate!
+        #todo
       end
 
       private

@@ -8,9 +8,9 @@ Sequel.migration do
 
       String :url, null: false
       String :filename, null: false
+      Integer :size, null: false
+      DateTime :mtime, null: false
       String :mirror
-      Integer :size
-      DateTime :mtime
       String :md5
       String :sha1
       String :sha256
