@@ -29,6 +29,9 @@ module Zadar
           super(CreatePool.new(name: name, path: path, user: user))
           create_log_dir
           super(CreateProjectInternals.new(path, name))
+          create_iso_dir
+          create_images_dir
+          create_snapshots_dir
           seeds.seed!
           report "New project in with path #{path} has been created"
         end
@@ -43,6 +46,13 @@ module Zadar
       def create_log_dir
         FileUtils.mkdir(path.join('log'))
       end
+
+      def create_iso_dir
+        FileUtils.mkdir(path.join('iso'))
+      end
+
+      def create_images_dir;    end
+      def create_snapshots_dir; end
     end
   end
 end

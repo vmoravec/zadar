@@ -4,6 +4,8 @@ require 'libvirt'
 require 'pathname'
 require 'fileutils'
 require 'forwardable'
+require 'faraday'
+require 'active_support'
 
 require "zadar/version"
 require "zadar/utils"

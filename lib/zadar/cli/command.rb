@@ -47,6 +47,8 @@ module Zadar
         raise CommandFailure, message
       end
 
+      alias_method :failure!, :failure
+
       def execute
         @result = yield
         result.call
@@ -98,6 +100,7 @@ module Zadar
       end
 
       def configure_gli
+        subcommand_option_handling :normal
         program_desc "Virtualization management and sharing system"
         version      ::Zadar::VERSION
       end
@@ -113,6 +116,8 @@ module Zadar
           puts error.message
         when OptionParser::MissingArgument
           puts "Incomplete command, #{error.message}"
+        when GLI::BadCommandLine
+          puts error.message
         else
           puts "This is a bug."
           puts "Thanks for reporting this to https://github.com/vmoravec/zadar/issues"
