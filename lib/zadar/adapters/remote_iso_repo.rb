@@ -1,3 +1,6 @@
+require 'zadar/adapters/opensuse'
+require 'zadar/adapters/local'
+
 module Zadar
   module Adapters
     def self.register type, klass

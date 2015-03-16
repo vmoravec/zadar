@@ -38,12 +38,12 @@ module Zadar
 
       def guess_local_dirname
         return if local_path
-        self.local_path = name.to_s.downcase.join("-")
+        self.local_path = name.to_s.downcase.split.join("-")
       end
 
       def invalid_url?
-        url = URI.parse(url)
-        return false unless url.absolute?
+        uri = URI.parse(url)
+        return false unless uri.absolute?
 
         false
       rescue => e

@@ -1,3 +1,5 @@
+require 'zadar/models/local_iso_repo'
+
 module Zadar
   module Services
     class FindLocalIsoRepos < Service

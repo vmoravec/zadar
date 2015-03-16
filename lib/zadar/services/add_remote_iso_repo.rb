@@ -1,6 +1,5 @@
 require 'zadar/services/detect_iso_remote_type'
 require 'zadar/adapters/remote_iso_repo'
-require 'zadar/adapters/opensuse'
 
 module Zadar
   module Services
@@ -19,23 +18,25 @@ module Zadar
         super do
           repo_type = Services::DetectIsoRemoteType.new(url: url).call.type
           report "Detected repository type '#{repo_type}'"
-          remote = Adapters::RemoteIsoRepo.new(type: repo_type.to_s, url: url)
-          remote.validate!
-          new_repo = Models::RemoteIsoRepo.create(url: url, name: name)
-          create_repo_dir(new_repo)
+          remote = Adapters::RemoteIsoRepo.new(type: repo_type.to_s, url: url).validate!
+          new_repo = create_new_repo(repo_type)
           remote.files.each do |file|
-            Models::RemoteIsoFile.create(file.to_h.merge(:remote_iso_repo: new_repo))
+            Models::IsoFile.create(file.to_h.merge(iso_repo: new_repo))
           end
           report "Repository '#{name}' has been created successfuly"
           report "#{remote.files.size} files has been detected"
         end
       end
 
-      def create_repo_dir repo
-        FileUtils.mkdir_p(File.join(
-          Zadar.current_project.path,
-          'iso',
-          repo.local_path))
+      private
+
+      def create_new_repo repo_type
+        path = File.join(Zadar.current_project.path, 'iso', name)
+        failure! "Repo directory already exists" if Dir.exist?(path)
+
+        new_repo = Models::IsoRepo.create(url: url, name: name, type: repo_type, local_path: path)
+        FileUtils.mkdir_p(path)
+        new_repo
       end
     end
   end

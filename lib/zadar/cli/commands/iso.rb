@@ -1,25 +1,57 @@
 zadar do
   desc "Manage iso files and repositories"
   command :iso do |iso|
-    iso.desc "Add remote repository"
-    iso.command :addremoterepo, :arr do |addrepo|
-      addrepo.flag [:u, :url]
+    iso.desc "Add repository"
+    iso.command :addrepo, :ar do |addrepo|
+      addrepo.flag [:url, :u], desc: "Mandatory url for remote repo"
+      addrepo.flag [:path, :p], desc: "Mandatory path for local repo"
+      addrepo.arg_name 'repo_name', required: true, desc: "Name of the new repo"
       addrepo.action do |_, opts, args|
-        require 'zadar/services/add_remote_iso_repo'
-
-        name = args.first.to_s
-        call { Zadar::Services::AddRemoteIsoRepo.new(opts.merge(name: name)) }
+        repo_name = args.first.to_s
+        if opts[:url]
+          require 'zadar/services/add_remote_iso_repo'
+          call { Zadar::Services::AddRemoteIsoRepo.new(opts.merge(name: repo_name)) }
+        elsif opts[:path]
+          require 'zadar/services/add_local_iso_repo'
+          call { Zadar::Services::AddLocalIsoRepo.new(opts.merge(name: repo_name)) }
+        else
+          failure! "Please specify --url or --path for the repository"
+        end
       end
     end
 
+    iso.desc "List repos"
+    iso.command :listrepos, :lr do |listrepos|
+      listrepos.switch :local, desc: "List local repos", negatable: false
+      listrepos.switch :remote, desc: "List remote repos", negatable: false
+      listrepos.action do |_, opts, _|
+        if opts[:local]
+          require 'zadar/services/find_local_iso_repos'
+          repos = Zadar::Services::FindLocalIsoRepos.new.call.repos
+          failure! "No iso repository found" if repos.empty?
+          puts Zadar::Models::LocalIsoRepo.columns.columnize
+          repos.each {|r| puts r.to_hash.values.columnize }
+        elsif opts[:remote]
+          repos = Zadar::Models::RemoteIsoRepo.all
+          failure! "No repository found" if repos.empty?
+          puts Zadar::Models::RemoteIsoRepo.columns.columnize
+          repos.each {|r| puts r.to_hash.values.columnize }
+        else
+          #TODO show all types of repositories
+        end
+      end
+    end
 
-    iso.desc "Add local iso repository"
-    iso.command :addlocalrepo, :alr do |addrepo|
-      addrepo.flag [:p, :path]
-      addrepo.action do |_, opts,args|
-        require 'zadar/services/add_local_iso_repo'
-
-        call { Zadar::Services::AddLocalIsoRepo.new(opts.merge(name: args.first)) }
+    iso.desc "List files"
+    iso.command :listfiles, :lf do |lsfiles|
+      lsfiles.flag [:repo, :r], desc: "Name of the repository"
+      lsfiles.action do |_, opts, _|
+        require 'zadar/services/find_iso_files'
+        failure! "Please specify name of the repository by using --repo" unless opts[:repo]
+        result = Zadar::Services::FindIsoFiles.new(repo_name: opts[:repo]).call
+        failure! "No files found for repo #{results.repo.name}" if result.files.size.zero?
+        puts Zadar::Models::RemoteIsoFile.columns.columnize
+        result.files.each {|r| puts r.to_hash.values.columnize }
       end
     end
 
@@ -33,19 +65,6 @@ zadar do
 
         failure! "Missing repository name" if opts[:repo].to_s.empty?
         call { Zadar::Services::AddLocalIsoFile.new(opts.merge(filename: args.first)) }
-      end
-    end
-
-    iso.desc "List local iso repos"
-    iso.command :"listlocalrepos", :llr do |list|
-      list.action do |_, options, _|
-        require 'zadar/services/find_local_iso_repos'
-
-        repos = Zadar::Services::FindLocalIsoRepos.new.call.repos
-        failure! "No iso repository found" if repos.empty?
-
-        puts Zadar::Models::LocalIsoRepo.columns.columnize
-        repos.each {|r| puts r.to_hash.values.columnize }
       end
     end
 

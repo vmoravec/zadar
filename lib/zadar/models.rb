@@ -3,6 +3,8 @@ require 'zadar/models/project'
 require 'zadar/models/machine'
 require 'zadar/models/local_iso_repo'
 require 'zadar/models/local_iso_file'
+require 'zadar/models/remote_iso_repo'
+require 'zadar/models/remote_iso_file'
 
 module Zadar
   module Models

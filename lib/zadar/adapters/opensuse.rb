@@ -10,7 +10,7 @@ module Zadar
       end
 
       def validate!
-        #todo
+        self
       end
 
       private
@@ -23,14 +23,15 @@ module Zadar
       def resolve_refs
         refs.map do |ref|
           response = connection.head(ref)
-          location = response.headers['location']
+          file_url = url + ref
+          location = response.headers['location'] || file_url
           mirror = connection.head(location).headers
           RemoteIsoStruct.new(
-            url + ref,
+            file_url,
             location,
             filename = Pathname.new(location).basename.to_s,
             mirror['content-length'].to_i,
-            DateTime.parse(mirror['last-modified']),
+            mirror ? DateTime.parse(mirror['last-modified']) : DateTime.parse(response['last-modified']),
             find_md5(filename),
             find_sha1(filename),
             find_sha256(filename)
